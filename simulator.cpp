@@ -13,6 +13,7 @@
 #include <QGLContext>
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 
 const float Simulator::SIZE_OF_UNIVERSE = 10.0f;
 
@@ -32,8 +33,18 @@ const float Simulator::SIZE_OF_UNIVERSE = 10.0f;
 
 Simulator::~Simulator()
 {
+    clReleaseKernel(_kernels[0]);
+    clReleaseProgram(_program);
+    clReleaseCommandQueue(_commandQueue);
+    clReleaseContext(_context);
+    clReleaseMemObject(_starBuffer);
+    clReleaseMemObject(_starSpeedBuffer);
+    clReleaseMemObject(_galacticCenterBuffer);
+
+
     delete[] _stars;
     delete[] _galacticCenters;
+    delete[] _starSpeed;
 
 }
 
@@ -46,7 +57,6 @@ void Simulator::initCL()
     error = clGetDeviceIDs(_platform, CL_DEVICE_TYPE_GPU, 1, &_device, NULL);
     assert(error == CL_SUCCESS);
 
-#if 1
     cl_context_properties props[] =
     {
         CL_GL_CONTEXT_KHR,  (cl_context_properties)glXGetCurrentContext(),
@@ -54,13 +64,9 @@ void Simulator::initCL()
         CL_CONTEXT_PLATFORM, (cl_context_properties)_platform,
         0
     };
-#endif
-
-
     _context = clCreateContext(props, 1, &_device, NULL, NULL, &error);
     qDebug("Error code: %d\n", error);
     assert(error == CL_SUCCESS);
-
 
     _commandQueue = clCreateCommandQueue(_context, _device, 0, &error);
     assert(error == CL_SUCCESS);
@@ -84,25 +90,29 @@ void Simulator::initCL()
     size_t galacticCenterBufferSize = sizeof(cl_float4) *
         _numberOfGalacticCenters;
 
+    // VBO Buffer (sterren)
     _starBuffer = clCreateFromGLBuffer(_context, CL_MEM_READ_WRITE,
             _starVBO, &error);
     assert(error == CL_SUCCESS);
-    qDebug() << "starBufferSize =" << starBufferSize;
     clFinish(_commandQueue);
     error = clEnqueueAcquireGLObjects(_commandQueue, 1, &_starBuffer, 0,
             NULL, NULL);
-
-    //_starBuffer = clCreateBuffer(_context, CL_MEM_READ_WRITE, starBufferSize,
-    //        NULL, &error);
     error = clEnqueueWriteBuffer(_commandQueue, _starBuffer, CL_TRUE, 0,
             starBufferSize, (void *)_stars, 0, NULL, NULL);
-    qDebug() << "Error Code:" << error;
     assert(error == CL_SUCCESS);
 
+    // Galactic Center Buffer
     _galacticCenterBuffer = clCreateBuffer(_context, CL_MEM_READ_WRITE,
             galacticCenterBufferSize, NULL, &error);
     error |= clEnqueueWriteBuffer(_commandQueue, _galacticCenterBuffer, CL_TRUE, 0,
             galacticCenterBufferSize, (void *)_galacticCenters, 0, NULL, NULL);
+    assert(error == CL_SUCCESS);
+
+    // Star speed buffer
+    _starSpeedBuffer = clCreateBuffer(_context, CL_MEM_READ_WRITE,
+            starBufferSize, NULL, &error);
+    error |= clEnqueueWriteBuffer(_commandQueue, _starSpeedBuffer, CL_TRUE, 0,
+            starBufferSize, (void *)_starSpeed, 0, NULL, NULL);
     assert(error == CL_SUCCESS);
 
     error  = clSetKernelArg(_kernels[0], 0, sizeof(int),
@@ -111,7 +121,10 @@ void Simulator::initCL()
             &_starBuffer);
     error |= clSetKernelArg(_kernels[0], 2, sizeof(cl_mem),
             &_galacticCenterBuffer);
+    error |= clSetKernelArg(_kernels[0], 3, sizeof(cl_mem),
+            &_starSpeedBuffer);
     assert(error == CL_SUCCESS);
+
     error = clEnqueueReleaseGLObjects(_commandQueue, 1, &_starBuffer, 0,
             NULL, NULL);
     assert(error == CL_SUCCESS);
@@ -150,6 +163,8 @@ void Simulator::createInput(int numberOfStars, int numberOfGalacticCenters)
     _galacticCenters = new cl_float3[_numberOfGalacticCenters];
     generateRandom(_stars, _numberOfStars);
     generateRandom(_galacticCenters, _numberOfGalacticCenters);
+    _starSpeed = new cl_float4[_numberOfStars];
+    memset(_starSpeed, 0, sizeof(cl_float) * _numberOfStars);
 }
 
 void Simulator::printBuildLog()
@@ -177,9 +192,6 @@ void Simulator::generateRandom(cl_float3 *objects, int number)
             SIZE_OF_UNIVERSE / 2;
         objects[i].z = ((float)qrand() / (float)RAND_MAX) * SIZE_OF_UNIVERSE -
             SIZE_OF_UNIVERSE / 2;
-        qDebug() << "x =" << objects[i].x;
-        qDebug() << "y =" << objects[i].y;
-        qDebug() << "z =" << objects[i].z;
     }
 }
 

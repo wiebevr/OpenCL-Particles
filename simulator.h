@@ -23,7 +23,7 @@ class Simulator
 
     public:
         static const float SIZE_OF_UNIVERSE;
-        enum {NUMBER_OF_STARS = 50000, NUMBER_OF_GALACTIC_CENTERS = 10};
+        enum {NUMBER_OF_STARS = 60000, NUMBER_OF_GALACTIC_CENTERS = 10};
 
     public slots:
         void simulationStep();
@@ -45,10 +45,12 @@ class Simulator
         cl_kernel _kernels[2];
 
         cl_mem _starBuffer;
+        cl_mem _starSpeedBuffer;
         cl_mem _galacticCenterBuffer;
 
         cl_float4 *_stars;
         cl_float4 *_galacticCenters;
+        cl_float4 *_starSpeed;
         int _numberOfStars;
         int _numberOfGalacticCenters;
 

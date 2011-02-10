@@ -5,8 +5,8 @@ GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent)
 {
     _camera = new Camera(60.0, (double)width() / (double)height(),
-            1.0, 200.0, this);
-    _camera->setRotationPoint(QVector3D(0.0f, 0.0f, 9.0f));
+            1.0, 800.0, this);
+    _camera->setRotationPoint(QVector3D(0.0f, 0.0f, 20.0f));
 
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(step()));
@@ -22,7 +22,7 @@ void GLWidget::initializeGL()
 {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_POINT_SMOOTH);
-    glPointSize(5.0f);
+    glPointSize(2.0f);
 
     makeGeometry();
     makeShaders();
@@ -82,7 +82,7 @@ void GLWidget::makeGeometry()
     glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER,
             Simulator::NUMBER_OF_STARS * sizeof(cl_float4),
-            /*(void *)vertexData*/0, GL_DYNAMIC_DRAW);
+            /*(void *)vertexData*/0, GL_STATIC_DRAW);
     qDebug() << "glBufferSize =" << Simulator::NUMBER_OF_STARS * sizeof(cl_float4);
 
     glGenBuffers(1, &_elementBuffer);
