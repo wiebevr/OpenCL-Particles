@@ -136,15 +136,14 @@ void Simulator::simulationStep()
 {
     cl_int error;
 
-    const size_t workItemsPerGroup = 64;
-    const size_t totalNumberOfWorkItems = (NUMBER_OF_STARS / 64 + 1) * 64;
+    const size_t totalNumberOfWorkItems = NUMBER_OF_STARS;
 
     error = clEnqueueAcquireGLObjects(_commandQueue, 1, &_starBuffer, 0,
             NULL, NULL);
     assert(error == CL_SUCCESS);
 
     error = clEnqueueNDRangeKernel(_commandQueue, _kernels[0], 1, NULL,
-            &totalNumberOfWorkItems, &workItemsPerGroup, 0, NULL, NULL);
+            &totalNumberOfWorkItems, NULL, 0, NULL, NULL);
     assert(error == CL_SUCCESS);
 
     error = clEnqueueReleaseGLObjects(_commandQueue, 1, &_starBuffer, 0,
