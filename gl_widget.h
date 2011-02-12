@@ -6,6 +6,9 @@
 #include <QGLShader>
 #include <QGLShaderProgram>
 #include <QTimer>
+#include <QPoint>
+#include <QMouseEvent>
+#include <QKeyEvent>
 
 #include "camera.h"
 #include "simulator.h"
@@ -27,6 +30,8 @@ class GLWidget
         void makeGeometry();
         void makeShaders();
 
+        void mouseMoveEvent(QMouseEvent *event);
+        void keyPressEvent(QKeyEvent *event);
     protected slots:
         void step();
 
@@ -40,6 +45,8 @@ class GLWidget
         QTimer *_timer;
 
         Simulator *_simulator;
+
+        QPoint _lastPosition;
 
 
 };

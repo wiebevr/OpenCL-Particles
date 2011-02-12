@@ -5,13 +5,14 @@ GLWidget::GLWidget(QWidget *parent)
     : QGLWidget(parent)
 {
     _camera = new Camera(60.0, (double)width() / (double)height(),
-            1.0, 800.0, this);
-    _camera->setRotationPoint(QVector3D(0.0f, 0.0f, 20.0f));
+            1.0, 1000000.0, this);
+    _camera->setRotationPoint(QVector3D(0.0f, 0.0f, 100.0f));
+
+    _lastPosition = QPoint(width()/2, height()/2);
+    setFocusPolicy(Qt::ClickFocus);
 
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(step()));
-
-    //Simulator simulator(this->context());
 }
 
 GLWidget::~GLWidget()
@@ -22,7 +23,7 @@ void GLWidget::initializeGL()
 {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_POINT_SMOOTH);
-    glPointSize(2.0f);
+    glPointSize(.02f);
 
     makeGeometry();
     makeShaders();
@@ -120,4 +121,48 @@ void GLWidget::makeShaders()
     _shaderProgram->addShader(vertexShader);
     _shaderProgram->link();
 
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    if (event->buttons() & Qt::LeftButton)
+    {
+        if (event->pos().x() < _lastPosition.x())
+            _camera->rotate(_lastPosition.x() - event->pos().x(), QVector3D(0.0, 1.0, 0.0));
+        else
+            _camera->rotate(-(event->pos().x() - _lastPosition.x()), QVector3D(0.0, 1.0, 0.0));
+
+        if (event->pos().y() < _lastPosition.y())
+            _camera->rotate(_lastPosition.y() - event->pos().y(), QVector3D(1.0, 0.0, 0.0));
+        else
+            _camera->rotate(-(event->pos().y() - _lastPosition.y()), QVector3D(1.0, 0.0, 0.0));
+
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
+    _lastPosition = event->pos();
+}
+
+void GLWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Z || event->key() == Qt::Key_Up)
+    {
+        _camera->translateRotationPoint(QVector3D(0.0, 0.0, -100.0));
+        qDebug("Up");
+        event->accept();
+    }
+    else if (event->key() == Qt::Key_S || event->key() == Qt::Key_Down)
+    {
+        _camera->translateRotationPoint(QVector3D(0.0, 0.0, 100.0));
+        qDebug("Down");
+        event->accept();
+    }
+    else
+    {
+        qDebug("ignore");
+        event->ignore();
+    }
 }
