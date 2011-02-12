@@ -136,8 +136,8 @@ void Simulator::simulationStep()
 {
     cl_int error;
 
-    const size_t workItemsPerGroup = 512;
-    const size_t totalNumberOfWorkItems = (NUMBER_OF_STARS / 512 + 1) * 512;
+    const size_t workItemsPerGroup = 64;
+    const size_t totalNumberOfWorkItems = (NUMBER_OF_STARS / 64 + 1) * 64;
 
     error = clEnqueueAcquireGLObjects(_commandQueue, 1, &_starBuffer, 0,
             NULL, NULL);
