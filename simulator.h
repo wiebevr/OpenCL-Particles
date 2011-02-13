@@ -23,7 +23,7 @@ class Simulator
 
     public:
         static const float SIZE_OF_UNIVERSE;
-        enum {NUMBER_OF_STARS = 500000, NUMBER_OF_GALACTIC_CENTERS = 10};
+        enum {NUMBER_OF_STARS = 100000, NUMBER_OF_GALACTIC_CENTERS = 10};
 
     public slots:
         void simulationStep();
