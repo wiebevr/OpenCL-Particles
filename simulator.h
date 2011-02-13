@@ -23,7 +23,7 @@ class Simulator
 
     public:
         static const float SIZE_OF_UNIVERSE;
-        enum {NUMBER_OF_STARS = 100000, NUMBER_OF_GALACTIC_CENTERS = 10};
+        enum {NUMBER_OF_STARS = 500000, NUMBER_OF_GALACTIC_CENTERS = 10};
 
     public slots:
         void simulationStep();
@@ -33,7 +33,7 @@ class Simulator
         int readFile(QString filename, QByteArray &sourceCode);
         void printBuildLog();
 
-        void generateRandom(cl_float3 *objects, int number);
+        void generateRandom(cl_float3 *objects, int number, int boundary);
         void createInput(int numberOfStars, int numberOfGalacticCenters);
 
     private:
@@ -53,6 +53,7 @@ class Simulator
         cl_float4 *_starSpeed;
         int _numberOfStars;
         int _numberOfGalacticCenters;
+        float _tijd;
 
         QTimer *_timer;
 

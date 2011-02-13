@@ -1,10 +1,12 @@
 #define CONSTANT 0.01
 
+
 __kernel void starSimulation(const int numberOfGalacticCenters,
         __global float4 *stars, __global const float4 *galacticCenters,
-        __global float4 *starSpeed)
+        __global float4 *starSpeed, const float tijd)
 {
     const int id = get_global_id(0);
+#if 1
 
     // increase speed
     for (int i = 0; i < numberOfGalacticCenters; ++i)
@@ -26,4 +28,7 @@ __kernel void starSimulation(const int numberOfGalacticCenters,
     }
     // position from speed
     stars[id].xyz += starSpeed[id].xyz * 0.001;
+#else
+    stars[id].z =  sin(tijd + (stars[id].x)) + cos(tijd + (stars[id].y));
+#endif
 }

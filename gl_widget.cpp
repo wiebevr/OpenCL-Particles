@@ -150,13 +150,13 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Z || event->key() == Qt::Key_Up)
     {
-        _camera->translateRotationPoint(QVector3D(0.0, 0.0, -100.0));
+        _camera->translateRotationPoint(QVector3D(0.0, 0.0, -10.0));
         qDebug("Up");
         event->accept();
     }
     else if (event->key() == Qt::Key_S || event->key() == Qt::Key_Down)
     {
-        _camera->translateRotationPoint(QVector3D(0.0, 0.0, 100.0));
+        _camera->translateRotationPoint(QVector3D(0.0, 0.0, 10.0));
         qDebug("Down");
         event->accept();
     }

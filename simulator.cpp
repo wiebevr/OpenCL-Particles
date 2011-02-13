@@ -22,6 +22,7 @@ const float Simulator::SIZE_OF_UNIVERSE = 10.0f;
 {
     _timer = new QTimer(this);
     connect(_timer, SIGNAL(timeout()), this, SLOT(simulationStep()));
+    _tijd = 0.0f;
 
 
     _starVBO = starVBO;
@@ -123,6 +124,8 @@ void Simulator::initCL()
             &_galacticCenterBuffer);
     error |= clSetKernelArg(_kernels[0], 3, sizeof(cl_mem),
             &_starSpeedBuffer);
+    error |= clSetKernelArg(_kernels[0], 4, sizeof(float),
+            &_tijd);
     assert(error == CL_SUCCESS);
 
     error = clEnqueueReleaseGLObjects(_commandQueue, 1, &_starBuffer, 0,
@@ -142,6 +145,10 @@ void Simulator::simulationStep()
             NULL, NULL);
     assert(error == CL_SUCCESS);
 
+    error  = clSetKernelArg(_kernels[0], 4, sizeof(float),
+            &_tijd);
+    assert(error == CL_SUCCESS);
+
     error = clEnqueueNDRangeKernel(_commandQueue, _kernels[0], 1, NULL,
             &totalNumberOfWorkItems, NULL, 0, NULL, NULL);
     assert(error == CL_SUCCESS);
@@ -151,6 +158,7 @@ void Simulator::simulationStep()
     assert(error == CL_SUCCESS);
 
     clFinish(_commandQueue);
+    _tijd += 0.1f;
 
 }
 
@@ -160,8 +168,9 @@ void Simulator::createInput(int numberOfStars, int numberOfGalacticCenters)
     _numberOfGalacticCenters = numberOfGalacticCenters;
     _stars = new cl_float3[_numberOfStars];
     _galacticCenters = new cl_float3[_numberOfGalacticCenters];
-    generateRandom(_stars, _numberOfStars);
-    generateRandom(_galacticCenters, _numberOfGalacticCenters);
+    generateRandom(_stars, _numberOfStars, SIZE_OF_UNIVERSE);
+    generateRandom(_galacticCenters, _numberOfGalacticCenters, 
+            SIZE_OF_UNIVERSE);
     _starSpeed = new cl_float4[_numberOfStars];
     memset(_starSpeed, 0, sizeof(cl_float) * _numberOfStars);
 }
@@ -179,18 +188,18 @@ void Simulator::printBuildLog()
 
 }
 
-void Simulator::generateRandom(cl_float3 *objects, int number)
+void Simulator::generateRandom(cl_float3 *objects, int number, int boundary)
 {
     qsrand(QTime::currentTime().msec());
 
     for (int i = 0; i < number; ++i)
     {
-        objects[i].x = ((float)qrand() / (float)RAND_MAX) * SIZE_OF_UNIVERSE -
-            SIZE_OF_UNIVERSE / 2;
-        objects[i].y = ((float)qrand() / (float)RAND_MAX) * SIZE_OF_UNIVERSE -
-            SIZE_OF_UNIVERSE / 2;
-        objects[i].z = ((float)qrand() / (float)RAND_MAX) * SIZE_OF_UNIVERSE -
-            SIZE_OF_UNIVERSE / 2;
+        objects[i].x = ((float)qrand() / (float)RAND_MAX) * boundary -
+            boundary / 2;
+        objects[i].y = ((float)qrand() / (float)RAND_MAX) * boundary -
+            boundary / 2;
+        objects[i].z = ((float)qrand() / (float)RAND_MAX) * boundary -
+            boundary / 2;
     }
 }
 
